@@ -1,24 +1,31 @@
 import { argv } from "node:process";
-import axios from "axios";
-import * as cheerio from "cheerio";
+import { validateURL } from "./src/validateURL";
+import { parseImg } from "./src/parseImg";
+import { fetchHTML } from "./src/fetchHTML";
 
-const site = argv[2];
+const siteArg = argv[2];
 
-const fetchSite = async (url: string) => {
-	const response = await axios(url);
-	const body = await response.data;
-	return body;
+const main = async () => {
+	const isURLValid = validateURL(siteArg);
+	if (!isURLValid) {
+		console.error("Invalid URL");
+		process.exit(1);
+	}
+	const site = new URL(siteArg);
+
+	const fetchSite = await fetchHTML(site);
+	if (fetchSite.status !== 200) {
+		console.error(`Error: ${fetchSite.error}`);
+		process.exit(1);
+	}
+
+	const imgSrc = parseImg(fetchSite.html);
+	if (!imgSrc) {
+		console.error("Error: Could not find image");
+		process.exit(1);
+	}
+
+	console.log(imgSrc);
 };
 
-const parseImg = (body: unknown) => {
-	const $ = cheerio.load(body as string);
-	const h = $("#screenshot-image").attr("src");
-	console.log(h);
-};
-
-const the = async () => {
-	const res = await fetchSite(site);
-	parseImg(res);
-};
-
-the();
+main();

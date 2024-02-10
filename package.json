@@ -1,6 +1,6 @@
 {
 	"name": "lightshot-scraper",
-	"version": "0.0.0",
+	"version": "1.0.0",
 	"description": "scraping direct links from prnt.sc links",
 	"main": "index.ts",
 	"scripts": {
