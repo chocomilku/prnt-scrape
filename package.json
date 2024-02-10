@@ -2,11 +2,16 @@
 	"name": "lightshot-scraper",
 	"version": "0.0.0",
 	"description": "scraping direct links from prnt.sc links",
-	"main": "index.js",
-	"scripts": {},
+	"main": "index.ts",
+	"scripts": {
+		"start": "ts-node ."
+	},
 	"author": "chocomilku",
 	"license": "ISC",
 	"dependencies": {
-		"@types/node": "^20.11.17"
+		"@types/node": "^20.11.17",
+		"axios": "^1.6.7",
+		"cheerio": "^1.0.0-rc.12",
+		"ts-node": "^10.9.2"
 	}
 }
