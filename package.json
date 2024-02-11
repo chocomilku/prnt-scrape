@@ -5,8 +5,8 @@
 	"main": "index.ts",
 	"scripts": {
 		"start": "ts-node .",
-		"version": "genversion --esm --semi --verbose utils/version.ts",
-		"build": "npm run version && npx esbuild index.ts --bundle --outfile=build/build.cjs --format=cjs --platform=node",
+		"updateVersion": "genversion --esm --semi --verbose utils/version.ts",
+		"build": "npm run updateVersion && npx esbuild index.ts --bundle --outfile=build/build.cjs --format=cjs --platform=node",
 		"compile": "npx pkg -t node18-linux-x64,node18-win-x64,node18-macos-x64 --out-path dist/ --compress GZip build/build.cjs"
 	},
 	"author": "chocomilku",
