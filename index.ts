@@ -1,19 +1,39 @@
-import { argv } from "node:process";
 import { validateURL } from "./src/validateURL";
 import { parseImg } from "./src/parseImg";
 import { fetchHTML } from "./src/fetchHTML";
-
-const siteArg = argv[2];
+import * as clack from "@clack/prompts";
 
 const main = async () => {
-	const isURLValid = validateURL(siteArg);
-	if (!isURLValid) {
-		console.error("Invalid URL");
-		process.exit(1);
-	}
-	const site = new URL(siteArg);
+	const group = await clack.group(
+		{
+			intro: () => clack.intro("prnt.sc scraper"),
+			siteArgument: () =>
+				clack.text({
+					message: "Enter a prnt.sc URL:",
+					placeholder: "https://prnt.sc/________",
+					validate(value) {
+						const validationResults = validateURL(value);
+						const invalidResults = validationResults.filter((result) => {
+							return result.isValid == false;
+						});
+						if (invalidResults.length != 0) {
+							return invalidResults[0].errorMessage;
+						}
+					},
+				}),
+		},
+		{
+			onCancel() {
+				clack.cancel("Process Stopped.");
+				process.exit(0);
+			},
+		}
+	);
 
-	const fetchSite = await fetchHTML(site);
+	const spin = clack.spinner();
+	spin.start(`Fetching ${group.siteArgument}`);
+
+	const fetchSite = await fetchHTML(group.siteArgument);
 	if (fetchSite.status !== 200) {
 		console.error(`Error: ${fetchSite.error}`);
 		process.exit(1);
@@ -21,10 +41,17 @@ const main = async () => {
 
 	const imgSrc = parseImg(fetchSite.html);
 	if (!imgSrc) {
-		console.error("Error: Could not find image");
+		spin.stop(`Error: Could not find image`);
 		process.exit(1);
 	}
 
+	// st.prntscr.com is the domain of an image telling the screenshot was removed.
+	if (imgSrc.includes("st.prntscr.com")) {
+		spin.stop("Error: This screenshot was removed.");
+		process.exit(1);
+	}
+
+	spin.stop(`Successfully scraped direct link`);
 	console.log(imgSrc);
 };
 
