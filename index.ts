@@ -3,6 +3,7 @@ import { parseImg } from "./src/parseImg";
 import { fetchHTML } from "./src/fetchHTML";
 import * as clack from "@clack/prompts";
 import pc from "picocolors";
+import { getVersion } from "./utils/getVersion";
 
 const main = async () => {
 	console.clear();
@@ -10,7 +11,9 @@ const main = async () => {
 	const group = await clack.group(
 		{
 			intro: () =>
-				clack.intro(`${pc.bgWhite(pc.black(pc.bold(`prnt-scrape`)))}`),
+				clack.intro(
+					`${pc.bgWhite(pc.black(pc.bold(`prnt-scrape v${getVersion()}`)))}`
+				),
 			siteArgument: () =>
 				clack.text({
 					message: "Enter a prnt.sc URL:",
