@@ -10,7 +10,7 @@
 		"compile": "npx pkg -t node18-linux-x64,node18-win-x64,node18-macos-x64 --out-path dist/ --compress GZip build/build.cjs"
 	},
 	"author": "chocomilku",
-	"license": "ISC",
+	"license": "GPL-3.0-only",
 	"dependencies": {
 		"@clack/prompts": "^0.7.0",
 		"@types/node": "^20.11.17",
