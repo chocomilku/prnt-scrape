@@ -11,6 +11,8 @@ import {
 	ScrapeError,
 } from "./src/errors";
 
+let count = 1;
+
 const main = async () => {
 	console.clear();
 
@@ -18,7 +20,9 @@ const main = async () => {
 		{
 			intro: () =>
 				clack.intro(
-					`${pc.bgWhite(pc.black(pc.bold(`prnt-scrape v${getVersion()}`)))}`
+					`${pc.bgWhite(pc.black(pc.bold(`prnt-scrape v${getVersion()}`)))} ${
+						count > 1 ? pc.dim(`#${count}`) : ""
+					}`
 				),
 			siteArgument: () =>
 				clack.text({
@@ -37,7 +41,7 @@ const main = async () => {
 		},
 		{
 			onCancel() {
-				clack.cancel("Process Stopped.");
+				clack.cancel("Program Stopped.");
 				process.exit(0);
 			},
 		}
@@ -88,6 +92,7 @@ const main = async () => {
 			process.exit(1);
 		}
 	} finally {
+		count++;
 		const shouldRepeat = await clack.confirm({
 			message: "Scrape another?",
 		});
