@@ -3,7 +3,7 @@ import axios, { AxiosError, isAxiosError } from "axios";
 interface FetchHTMLResponse {
 	html: string;
 	status: number;
-	error: string | null;
+	error: string | undefined | null;
 }
 
 export const fetchHTML = async (url: string): Promise<FetchHTMLResponse> => {

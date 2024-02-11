@@ -4,6 +4,12 @@ import { fetchHTML } from "./src/fetchHTML";
 import * as clack from "@clack/prompts";
 import pc from "picocolors";
 import { getVersion } from "./utils/getVersion";
+import {
+	BaseError,
+	FetchError,
+	ResourceError,
+	ScrapeError,
+} from "./src/errors";
 
 const main = async () => {
 	console.clear();
@@ -38,28 +44,60 @@ const main = async () => {
 	);
 
 	const spin = clack.spinner();
-	spin.start(pc.magenta(`Fetching ${group.siteArgument}`));
 
-	const fetchSite = await fetchHTML(group.siteArgument);
-	if (fetchSite.status !== 200) {
-		spin.stop(pc.red("Fetching Error: ${fetchSite.error}"), 2);
-		process.exit(1);
+	try {
+		spin.start(pc.magenta(`Fetching ${group.siteArgument}`));
+
+		const fetchSite = await fetchHTML(group.siteArgument);
+		if (fetchSite.status !== 200)
+			throw new FetchError(fetchSite.error as string | undefined);
+
+		const imgSrc = parseImg(fetchSite.html);
+		if (!imgSrc) {
+			throw new ScrapeError("Could not find image.");
+		}
+
+		// TODO: implement arrays
+		const ERROR_DOMAIN = "st.prntscr.com";
+
+		// st.prntscr.com is the domain of an image telling the screenshot was removed.
+		if (imgSrc.includes(ERROR_DOMAIN))
+			throw new ResourceError("Screenshot has been removed.");
+
+		spin.stop(pc.blue("Successfully scraped direct link"));
+		clack.note(`${pc.green(pc.bold(pc.underline(imgSrc)))}`);
+	} catch (err) {
+		if (err instanceof BaseError) {
+			if (err.dangerous) {
+				spin.stop(
+					pc.bgRed(pc.white(pc.bold(`${err.name}: ${err.message}`))),
+					2
+				);
+				process.exit(1);
+			} else {
+				spin.stop(
+					`${pc.bgRed(pc.white(pc.bold(err.name)))}: ${pc.red(err.message)}`,
+					2
+				);
+			}
+		} else {
+			clack.log.error(
+				pc.bgRed(pc.white(pc.bold("An unexpected error occurred.")))
+			);
+			console.error(err);
+			process.exit(1);
+		}
+	} finally {
+		const shouldRepeat = await clack.confirm({
+			message: "Scrape another?",
+		});
+
+		if (shouldRepeat.valueOf() == false) {
+			clack.outro(pc.dim("Closing program..."));
+			process.exit(0);
+		}
+		main();
 	}
-
-	const imgSrc = parseImg(fetchSite.html);
-	if (!imgSrc) {
-		spin.stop(pc.red("Scraping Error: Could not find image."), 2);
-		process.exit(1);
-	}
-
-	// st.prntscr.com is the domain of an image telling the screenshot was removed.
-	if (imgSrc.includes("st.prntscr.com")) {
-		spin.stop(pc.red("Screenshot has been removed."), 2);
-		process.exit(1);
-	}
-
-	spin.stop(pc.blue("Successfully scraped direct link"));
-	clack.note(`${pc.green(pc.bold(pc.underline(imgSrc)))}`);
 };
 
 main();
