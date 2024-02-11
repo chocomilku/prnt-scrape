@@ -35,24 +35,24 @@ const main = async () => {
 
 	const fetchSite = await fetchHTML(group.siteArgument);
 	if (fetchSite.status !== 200) {
-		console.error(`Error: ${fetchSite.error}`);
+		spin.stop(`Fetching Error: ${fetchSite.error}`, 2);
 		process.exit(1);
 	}
 
 	const imgSrc = parseImg(fetchSite.html);
 	if (!imgSrc) {
-		spin.stop(`Error: Could not find image`);
+		spin.stop(`Scraping Error: Could not find image.`, 2);
 		process.exit(1);
 	}
 
 	// st.prntscr.com is the domain of an image telling the screenshot was removed.
 	if (imgSrc.includes("st.prntscr.com")) {
-		spin.stop("Error: This screenshot was removed.");
+		spin.stop("Screenshot has been removed.", 2);
 		process.exit(1);
 	}
 
 	spin.stop(`Successfully scraped direct link`);
-	console.log(imgSrc);
+	clack.note(`    ${imgSrc}`);
 };
 
 main();

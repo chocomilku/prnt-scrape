@@ -31,7 +31,7 @@ export const fetchHTML = async (url: string): Promise<FetchHTMLResponse> => {
 			html: "",
 			status: (err as AxiosError).response?.status ?? 500,
 			error:
-				(err as AxiosError).response?.statusText ?? "Internal Server Error",
+				(err as AxiosError).response?.statusText ?? "Unknown error occured",
 		};
 
 		return data;
