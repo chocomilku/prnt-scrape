@@ -6,9 +6,9 @@ interface FetchHTMLResponse {
 	error: string | null;
 }
 
-export const fetchHTML = async (url: URL): Promise<FetchHTMLResponse> => {
+export const fetchHTML = async (url: string): Promise<FetchHTMLResponse> => {
 	try {
-		const response = await axios.get<string>(url.href, {
+		const response = await axios.get<string>(url, {
 			headers: {
 				"User-Agent": "Mozilla/5.0",
 				Accept:
@@ -19,6 +19,7 @@ export const fetchHTML = async (url: URL): Promise<FetchHTMLResponse> => {
 			},
 		});
 		const data = { html: response.data, status: response.status, error: null };
+
 		return data;
 	} catch (err) {
 		if (!isAxiosError(err)) {
@@ -30,7 +31,7 @@ export const fetchHTML = async (url: URL): Promise<FetchHTMLResponse> => {
 			html: "",
 			status: (err as AxiosError).response?.status ?? 500,
 			error:
-				(err as AxiosError).response?.statusText ?? "Internal Server Error",
+				(err as AxiosError).response?.statusText ?? "Unknown error occured",
 		};
 
 		return data;

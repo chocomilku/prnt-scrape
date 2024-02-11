@@ -1,31 +1,62 @@
-import { argv } from "node:process";
 import { validateURL } from "./src/validateURL";
 import { parseImg } from "./src/parseImg";
 import { fetchHTML } from "./src/fetchHTML";
-
-const siteArg = argv[2];
+import * as clack from "@clack/prompts";
+import pc from "picocolors";
 
 const main = async () => {
-	const isURLValid = validateURL(siteArg);
-	if (!isURLValid) {
-		console.error("Invalid URL");
-		process.exit(1);
-	}
-	const site = new URL(siteArg);
+	console.clear();
 
-	const fetchSite = await fetchHTML(site);
+	const group = await clack.group(
+		{
+			intro: () =>
+				clack.intro(`${pc.bgWhite(pc.black(pc.bold(`prnt-scrape`)))}`),
+			siteArgument: () =>
+				clack.text({
+					message: "Enter a prnt.sc URL:",
+					placeholder: "https://prnt.sc/________",
+					validate(value) {
+						const validationResults = validateURL(value);
+						const invalidResults = validationResults.filter((result) => {
+							return result.isValid == false;
+						});
+						if (invalidResults.length != 0) {
+							return invalidResults[0].errorMessage;
+						}
+					},
+				}),
+		},
+		{
+			onCancel() {
+				clack.cancel("Process Stopped.");
+				process.exit(0);
+			},
+		}
+	);
+
+	const spin = clack.spinner();
+	spin.start(pc.magenta(`Fetching ${group.siteArgument}`));
+
+	const fetchSite = await fetchHTML(group.siteArgument);
 	if (fetchSite.status !== 200) {
-		console.error(`Error: ${fetchSite.error}`);
+		spin.stop(pc.red("Fetching Error: ${fetchSite.error}"), 2);
 		process.exit(1);
 	}
 
 	const imgSrc = parseImg(fetchSite.html);
 	if (!imgSrc) {
-		console.error("Error: Could not find image");
+		spin.stop(pc.red("Scraping Error: Could not find image."), 2);
 		process.exit(1);
 	}
 
-	console.log(imgSrc);
+	// st.prntscr.com is the domain of an image telling the screenshot was removed.
+	if (imgSrc.includes("st.prntscr.com")) {
+		spin.stop(pc.red("Screenshot has been removed."), 2);
+		process.exit(1);
+	}
+
+	spin.stop(pc.blue("Successfully scraped direct link"));
+	clack.note(`${pc.green(pc.bold(pc.underline(imgSrc)))}`);
 };
 
 main();
