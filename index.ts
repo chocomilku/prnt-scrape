@@ -27,7 +27,6 @@ const main = async () => {
 			siteArgument: () =>
 				clack.text({
 					message: "Enter a prnt.sc URL:",
-					placeholder: "https://prnt.sc/________",
 					validate(value) {
 						const validationResults = validateURL(value);
 						const invalidResults = validationResults.filter((result) => {
